@@ -7,6 +7,6 @@ import (
 	"net/http"
 )
 
-func UserRoute(router *mux.Router, repo helpers.UserRepository) {
+func UserRoute(router *mux.Router, repo *helpers.UserRepository) {
 	router.HandleFunc("/users", controllers.CreateUser(repo)).Methods(http.MethodPost)
 }

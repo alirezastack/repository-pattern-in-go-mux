@@ -13,7 +13,7 @@ import (
 
 var validate = validator.New()
 
-func CreateUser(repo helpers.UserRepository) http.HandlerFunc {
+func CreateUser(repo *helpers.UserRepository) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		var user models.User
 
