@@ -28,10 +28,6 @@ func (c UserMongo) ToEntity() (models.User, error) {
 	}, nil
 }
 
-type UserRepository struct {
-	//Client *mongo.Client
-}
-
 type MongoDBRepository struct {
 	Client *mongo.Client
 }
