@@ -24,7 +24,21 @@ func main() {
 	log.Printf("Graceful-timeout is set to %s", wait)
 
 	endpoint := configs.ServiceAddress()
-	router := gin.Default()
+	router := gin.New()
+
+	// Global middleware
+	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
+	// By default, gin.DefaultWriter = os.Stdout
+	router.Use(gin.Logger())
+
+	// Recovery middleware recovers from any panics and writes a 500 if there was one.
+	router.Use(gin.CustomRecovery(func(c *gin.Context, recovered interface{}) {
+		if err, ok := recovered.(string); ok {
+			log.Printf("An internal server error occurred: %s", err)
+			helpers.ReturnResponse(c, errors.New(err), http.StatusInternalServerError)
+		}
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}))
 
 	// initialize MongoDB connection
 	client, cancel := configs.ConnectDB()
