@@ -15,7 +15,6 @@ var validate = validator.New()
 
 func CreateUser(repo *helpers.MongoDBRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		panic("panic now!")
 		var user models.User
 
 		if err := c.ShouldBind(&user); err != nil {
