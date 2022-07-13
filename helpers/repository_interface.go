@@ -6,6 +6,7 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 )
 
 type Repository interface {
@@ -42,5 +43,6 @@ func (r *MongoDBRepository) CreateUser(ctx context.Context, user models.User) (s
 	}
 
 	res, err := usersCollection.InsertOne(ctx, newUser)
-	return res.InsertedID.(string), err
+	log.Printf("A new user is created with ID %s successfully", res.InsertedID)
+	return res.InsertedID.(primitive.ObjectID).Hex(), err
 }

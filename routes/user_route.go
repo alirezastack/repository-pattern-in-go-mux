@@ -3,10 +3,9 @@ package routes
 import (
 	"antoccino/controllers"
 	"antoccino/helpers"
-	"github.com/gorilla/mux"
-	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
-func UserRoute(router *mux.Router, repo *helpers.MongoDBRepository) {
-	router.HandleFunc("/users", controllers.CreateUser(repo)).Methods(http.MethodPost)
+func UserRoute(router *gin.Engine, repo *helpers.MongoDBRepository) {
+	router.POST("/users", controllers.CreateUser(repo))
 }

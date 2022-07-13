@@ -3,8 +3,8 @@ module antoccino
 go 1.18
 
 require (
+	github.com/gin-gonic/gin v1.8.1
 	github.com/go-playground/validator/v10 v10.11.0
-	github.com/gorilla/mux v1.8.0
 	github.com/spf13/viper v1.12.0
 	go.mongodb.org/mongo-driver v1.9.1
 )
@@ -12,7 +12,6 @@ require (
 require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.8.1 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect

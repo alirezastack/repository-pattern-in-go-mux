@@ -4,7 +4,7 @@ import (
 	"antoccino/helpers"
 	"antoccino/models"
 	"context"
-	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"log"
 	"net/http"
@@ -13,23 +13,21 @@ import (
 
 var validate = validator.New()
 
-func CreateUser(repo *helpers.MongoDBRepository) http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
+func CreateUser(repo *helpers.MongoDBRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
 		var user models.User
 
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-
-		// validate the request body
-		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-			helpers.ReturnResponse(rw, err, http.StatusBadRequest)
+		if err := c.ShouldBind(&user); err != nil {
+			helpers.ReturnResponse(c, err, http.StatusBadRequest)
 			return
 		}
 
 		if err := validate.Struct(&user); err != nil {
-			helpers.ReturnResponse(rw, err, http.StatusBadRequest)
+			helpers.ReturnResponse(c, err, http.StatusBadRequest)
 			return
 		}
+
+		log.Printf("createUser payload: %+v", user)
 
 		newUser := models.User{
 			Name:     user.Name,
@@ -37,13 +35,15 @@ func CreateUser(repo *helpers.MongoDBRepository) http.HandlerFunc {
 			Title:    user.Title,
 		}
 
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
 		insertedId, err := repo.CreateUser(ctx, newUser)
 		if err != nil {
-			helpers.ReturnResponse(rw, err, http.StatusInternalServerError)
+			helpers.ReturnResponse(c, err, http.StatusInternalServerError)
 			return
 		}
-		log.Printf("A new user is created with ID %s successfully", insertedId)
 
-		helpers.ReturnResponse(rw, map[string]interface{}{"id": insertedId}, http.StatusCreated)
+		helpers.ReturnResponse(c, gin.H{"id": insertedId}, http.StatusCreated)
 	}
 }

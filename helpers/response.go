@@ -2,32 +2,29 @@ package helpers
 
 import (
 	"antoccino/responses"
-	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"log"
-	"net/http"
 )
 
-func ReturnResponse(w http.ResponseWriter, data interface{}, statusCode int) {
-	var responseType string
-	var innerData map[string]interface{}
+func ReturnResponse(c *gin.Context, data any, statusCode int) {
+	var finalResponse any
 
 	switch data.(type) {
 	case error:
 		log.Printf("an error occurred with statusCode %d: %v", statusCode, data.(error).Error())
-		responseType = "error"
-		innerData = map[string]interface{}{"error": data.(error).Error()}
+		finalResponse = responses.UserResponse{
+			Status: "error",
+			Error: gin.H{
+				"code":    statusCode,
+				"message": data.(error).Error(),
+			},
+		}
 	default:
-		responseType = "success"
-		innerData = map[string]interface{}{"data": data}
+		finalResponse = responses.UserResponse{
+			Status: "success",
+			Data:   data,
+		}
 	}
 
-	finalResponse := responses.UserResponse{
-		Status:  statusCode,
-		Message: responseType,
-		Data:    innerData,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	res, _ := json.Marshal(finalResponse)
-	w.Write(res)
+	c.JSON(statusCode, finalResponse)
 }

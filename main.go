@@ -5,8 +5,9 @@ import (
 	"antoccino/helpers"
 	"antoccino/routes"
 	"context"
+	"errors"
 	"flag"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"os"
@@ -23,7 +24,7 @@ func main() {
 	log.Printf("Graceful-timeout is set to %s", wait)
 
 	endpoint := configs.ServiceAddress()
-	router := mux.NewRouter()
+	router := gin.Default()
 
 	// initialize MongoDB connection
 	client, cancel := configs.ConnectDB()
@@ -43,27 +44,29 @@ func main() {
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler:      router, // Pass our instance of gorilla/mux in.
+		Handler:      router, // Pass our instance of gin/gonic in.
 	}
 
-	// Run our server in a goroutine so that it doesn't block.
+	// Initializing the server in a goroutine so that
+	// it won't block the graceful shutdown handling below
 	go func() {
-		if err := srv.ListenAndServe(); err != nil {
+		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
 			log.Printf("ListenAndServe error: %s", err)
 		}
 	}()
 
-	c := make(chan os.Signal, 1)
-	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
-	// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
-	signal.Notify(c, os.Interrupt)
-	signal.Notify(c, syscall.SIGTERM)
+	// Wait for interrupt signal to gracefully shut down the server
+	quit := make(chan os.Signal, 1)
+
+	// kill (no param) default send syscall.SIGTERM
+	// kill -2 is syscall.SIGINT ()
+	// kill -9 is syscall.SIGKILL but can't be caught, so don't need to add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	log.Printf("running server on %s", endpoint)
 
-	// Block until we receive our signal.
-	//<-c
-	sig := <-c
+	// Block until we receive our signal
+	sig := <-quit
 	log.Printf("received shutdown signal: %+v", sig)
 
 	// Create a deadline to wait for.
