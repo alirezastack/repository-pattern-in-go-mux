@@ -3,6 +3,7 @@ package controllers
 import (
 	"antoccino/helpers"
 	"antoccino/models"
+	"antoccino/store"
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -13,7 +14,7 @@ import (
 
 var validate = validator.New()
 
-func CreateUser(repo *helpers.MongoDBRepository) gin.HandlerFunc {
+func CreateUser(repo store.Store) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user models.User
 

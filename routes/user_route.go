@@ -2,10 +2,10 @@ package routes
 
 import (
 	"antoccino/controllers"
-	"antoccino/helpers"
+	"antoccino/store"
 	"github.com/gin-gonic/gin"
 )
 
-func UserRoute(router *gin.Engine, repo *helpers.MongoDBRepository) {
+func UserRoute(router *gin.Engine, repo store.Store) {
 	router.POST("/users", controllers.CreateUser(repo))
 }

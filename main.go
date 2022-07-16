@@ -4,6 +4,7 @@ import (
 	"antoccino/configs"
 	"antoccino/helpers"
 	"antoccino/routes"
+	"antoccino/store"
 	"context"
 	"errors"
 	"flag"
@@ -54,16 +55,10 @@ func main() {
 		c.AbortWithStatus(http.StatusInternalServerError)
 	}))
 
-	// initialize MongoDB connection
-	client, cancel := configs.ConnectDB()
-	defer cancel()
-
-	repo := &helpers.MongoDBRepository{
-		Client: client,
-	}
+	mongoStore := store.NewMongoDBStore()
 
 	log.Printf("loading service routes...")
-	routes.UserRoute(router, repo)
+	routes.UserRoute(router, mongoStore)
 	log.Printf("all service routes are loaded")
 
 	srv := &http.Server{
