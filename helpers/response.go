@@ -2,8 +2,10 @@ package helpers
 
 import (
 	"antoccino/responses"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 )
 
 func ReturnResponse(c *gin.Context, data any, statusCode int) {
@@ -27,4 +29,12 @@ func ReturnResponse(c *gin.Context, data any, statusCode int) {
 	}
 
 	c.JSON(statusCode, finalResponse)
+}
+
+func GinCustomRecovery(c *gin.Context, recovered interface{}) {
+	if err, ok := recovered.(string); ok {
+		log.Printf("An internal server error occurred: %s", err)
+		ReturnResponse(c, errors.New(err), http.StatusInternalServerError)
+	}
+	c.AbortWithStatus(http.StatusInternalServerError)
 }

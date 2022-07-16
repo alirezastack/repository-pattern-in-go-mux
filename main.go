@@ -8,7 +8,6 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -21,7 +20,12 @@ import (
 func main() {
 	var wait time.Duration
 
-	flag.DurationVar(&wait, "graceful-timeout", configs.GracefulTimeout(), "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
+	flag.DurationVar(
+		&wait,
+		"graceful-timeout",
+		configs.GracefulTimeout(),
+		"the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m",
+	)
 	flag.Parse()
 	log.Printf("Graceful-timeout is set to %s", wait)
 
@@ -30,30 +34,10 @@ func main() {
 
 	// LoggerWithFormatter middleware will write the logs to gin.DefaultWriter
 	// By default gin.DefaultWriter = os.Stdout
-	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-
-		// custom log format
-		return fmt.Sprintf("%s - [%s] %s %s %s %d %s %s %s",
-			param.ClientIP,
-			param.TimeStamp.Format("2006-01-02 15:04:05"),
-			param.Method,
-			param.Path,
-			param.Request.Proto,
-			param.StatusCode,
-			param.Latency,
-			param.Request.UserAgent(),
-			param.ErrorMessage,
-		)
-	}))
+	router.Use(gin.LoggerWithFormatter(helpers.LogFormatter))
 
 	// Recovery middleware recovers from any panics and writes a 500 if there was one.
-	router.Use(gin.CustomRecovery(func(c *gin.Context, recovered interface{}) {
-		if err, ok := recovered.(string); ok {
-			log.Printf("An internal server error occurred: %s", err)
-			helpers.ReturnResponse(c, errors.New(err), http.StatusInternalServerError)
-		}
-		c.AbortWithStatus(http.StatusInternalServerError)
-	}))
+	router.Use(gin.CustomRecovery(helpers.GinCustomRecovery))
 
 	mongoStore := store.NewMongoDBStore()
 
