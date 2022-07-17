@@ -36,7 +36,8 @@ func CreateUser(repo store.Store) gin.HandlerFunc {
 			Title:    user.Title,
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		// release resources if CreateUser completes before timeout elapses
 		defer cancel()
 
 		insertedId, err := repo.CreateUser(ctx, newUser)

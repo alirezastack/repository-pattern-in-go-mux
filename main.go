@@ -32,12 +32,14 @@ func main() {
 	endpoint := configs.ServiceAddress()
 	router := gin.New()
 
-	// LoggerWithFormatter middleware will write the logs to gin.DefaultWriter
-	// By default gin.DefaultWriter = os.Stdout
-	router.Use(gin.LoggerWithFormatter(helpers.LogFormatter))
+	router.Use(
+		// LoggerWithFormatter middleware will write the logs to gin.DefaultWriter
+		// By default gin.DefaultWriter = os.Stdout
+		gin.LoggerWithFormatter(helpers.LogFormatter),
 
-	// Recovery middleware recovers from any panics and writes a 500 if there was one.
-	router.Use(gin.CustomRecovery(helpers.GinCustomRecovery))
+		// Recovery middleware recovers from any panics and writes a 500 if there was one.
+		gin.CustomRecovery(helpers.GinCustomRecovery),
+	)
 
 	mongoStore := store.NewMongoDBStore()
 
