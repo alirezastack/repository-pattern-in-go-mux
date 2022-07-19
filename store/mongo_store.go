@@ -15,7 +15,7 @@ type mongoStore struct {
 	store *mongo.Client
 }
 
-func (mc *mongoStore) CreateUser(ctx context.Context, user models.User) (string, error) {
+func (mc *mongoStore) CreateUser(user models.User) (string, error) {
 	var usersCollection = GetCollection(mc.store, "users")
 	newUser := models.UserMongo{
 		Id:       primitive.NewObjectID(),
@@ -23,6 +23,10 @@ func (mc *mongoStore) CreateUser(ctx context.Context, user models.User) (string,
 		Location: user.Location,
 		Title:    user.Title,
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	// release resources if CreateUser completes before timeout elapses
+	defer cancel()
 
 	res, err := usersCollection.InsertOne(ctx, newUser)
 	if err != nil {
