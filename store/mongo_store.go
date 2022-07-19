@@ -25,9 +25,13 @@ func (mc *mongoStore) CreateUser(ctx context.Context, user models.User) (string,
 	}
 
 	res, err := usersCollection.InsertOne(ctx, newUser)
+	if err != nil {
+		return "", err
+	}
+
 	log.Printf("A new user is created with ID %s successfully", res.InsertedID)
 
-	return res.InsertedID.(primitive.ObjectID).Hex(), err
+	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
 // NewMongoDBStore returns a MongoDB store
