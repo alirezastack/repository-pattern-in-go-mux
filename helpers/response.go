@@ -4,7 +4,7 @@ import (
 	"antoccino/responses"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"log"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -13,7 +13,7 @@ func ReturnResponse(c *gin.Context, data any, statusCode int) {
 
 	switch data.(type) {
 	case error:
-		log.Printf("an error occurred with statusCode %d: %v", statusCode, data.(error).Error())
+		log.Error().Msgf("an error occurred with statusCode %d: %v", statusCode, data.(error).Error())
 		finalResponse = responses.UserResponse{
 			Status: "error",
 			Error: gin.H{
@@ -33,7 +33,7 @@ func ReturnResponse(c *gin.Context, data any, statusCode int) {
 
 func GinCustomRecovery(c *gin.Context, recovered interface{}) {
 	if err, ok := recovered.(string); ok {
-		log.Printf("An internal server error occurred: %s", err)
+		log.Error().Msgf("An internal server error occurred: %s", err)
 		ReturnResponse(c, errors.New(err), http.StatusInternalServerError)
 	}
 	c.AbortWithStatus(http.StatusInternalServerError)

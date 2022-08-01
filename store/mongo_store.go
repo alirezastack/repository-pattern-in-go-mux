@@ -4,10 +4,10 @@ import (
 	"antoccino/configs"
 	"antoccino/models"
 	"context"
+	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 	"time"
 )
 
@@ -33,7 +33,7 @@ func (mc *mongoStore) CreateUser(user models.User) (string, error) {
 		return "", err
 	}
 
-	log.Printf("A new user is created with ID %s successfully", res.InsertedID)
+	log.Info().Msgf("A new user is created with ID %s successfully", res.InsertedID)
 
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
@@ -42,23 +42,26 @@ func (mc *mongoStore) CreateUser(user models.User) (string, error) {
 func NewMongoDBStore() Store {
 	client, err := mongo.NewClient(options.Client().ApplyURI(configs.MongoURI()))
 	if err != nil {
-		log.Fatal(err)
+		event := log.Fatal()
+		event.Msg(err.Error())
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatal(err)
+		event := log.Fatal()
+		event.Msg(err.Error())
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal(err)
+		event := log.Fatal()
+		event.Msg(err.Error())
 	}
 
-	log.Print("Successfully connected to MongoDB!")
+	log.Info().Msg("Successfully connected to MongoDB!")
 
 	s := &mongoStore{
 		store: client,

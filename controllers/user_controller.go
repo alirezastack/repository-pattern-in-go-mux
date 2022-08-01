@@ -6,7 +6,7 @@ import (
 	"antoccino/store"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"log"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -26,7 +26,7 @@ func CreateUser(repo store.Store) gin.HandlerFunc {
 			return
 		}
 
-		log.Printf("createUser payload: %+v", user)
+		log.Info().Msgf("createUser payload: %+v", user)
 
 		newUser := models.User{
 			Name:     user.Name,

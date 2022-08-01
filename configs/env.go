@@ -2,20 +2,21 @@ package configs
 
 import (
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
-	"log"
 	"os"
 	"time"
 )
 
 func init() {
-	log.Printf("config file is set to: %s", getEnv("FILE_CONFIG_NAME", ""))
+	log.Info().Msgf("config file is set to: %s", getEnv("FILE_CONFIG_NAME", ""))
 	viper.SetConfigName(getEnv("FILE_CONFIG_NAME", ""))
 	viper.SetConfigType("json")
 	viper.AddConfigPath("./configs")
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %w \n", err))
+		event := log.Panic()
+		event.Msg(fmt.Sprintf("Fatal error config file: %w \n", err))
 	}
 }
 

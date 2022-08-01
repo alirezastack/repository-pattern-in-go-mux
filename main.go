@@ -9,7 +9,8 @@ import (
 	"errors"
 	"flag"
 	"github.com/gin-gonic/gin"
-	"log"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,6 +20,7 @@ import (
 
 func main() {
 	var wait time.Duration
+	var debug bool
 
 	flag.DurationVar(
 		&wait,
@@ -26,8 +28,24 @@ func main() {
 		configs.GracefulTimeout(),
 		"the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m",
 	)
+
+	flag.BoolVar(
+		&debug,
+		"debug",
+		false,
+		"sets log level to debug",
+	)
+
 	flag.Parse()
-	log.Printf("Graceful-timeout is set to %s", wait)
+
+	zerolog.TimeFieldFormat = time.RFC3339
+	// Default log level is info, unless debug flag is set to true
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
+	log.Debug().Float64("ServerTimeout", wait.Seconds()).Msgf("Graceful-timeout is set to %s", wait)
 
 	endpoint := configs.ServiceAddress()
 	router := gin.New()
@@ -43,9 +61,9 @@ func main() {
 
 	mongoStore := store.NewMongoDBStore()
 
-	log.Printf("loading service routes...")
+	log.Info().Msg("loading service routes...")
 	routes.UserRoute(router, mongoStore)
-	log.Printf("all service routes are loaded")
+	log.Info().Msg("all service routes are loaded")
 
 	srv := &http.Server{
 		Addr: endpoint,
@@ -60,7 +78,7 @@ func main() {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
-			log.Printf("ListenAndServe error: %s", err)
+			log.Info().Msgf("ListenAndServe error: %s", err)
 		}
 	}()
 
@@ -72,11 +90,11 @@ func main() {
 	// kill -9 is syscall.SIGKILL but can't be caught, so don't need to add it
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Printf("running server on %s", endpoint)
+	log.Info().Msgf("running server on %s", endpoint)
 
 	// Block until we receive our signal
 	sig := <-quit
-	log.Printf("received shutdown signal: %+v", sig)
+	log.Info().Msgf("received shutdown signal: %+v", sig)
 
 	// Create a deadline to wait for.
 	ctx, cancel := context.WithTimeout(context.Background(), wait)
@@ -85,14 +103,14 @@ func main() {
 	// until the timeout deadline.
 	err := srv.Shutdown(ctx)
 	if err != nil {
-		log.Printf("server shutdown with error: %s\n", err)
+		log.Error().Msgf("server shutdown with error: %s\n", err)
 		os.Exit(1)
 	}
 
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
-	log.Println("server shutdown gracefully ;)")
+	log.Info().Msg("server shutdown gracefully ;)")
 	os.Exit(0)
 
 }
