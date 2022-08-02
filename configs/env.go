@@ -1,7 +1,6 @@
 package configs
 
 import (
-	"fmt"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"os"
@@ -16,7 +15,7 @@ func init() {
 	err := viper.ReadInConfig()
 	if err != nil {
 		event := log.Panic()
-		event.Msg(fmt.Sprintf("Fatal error config file: %w \n", err))
+		event.Msgf("Fatal error config file: %w", err)
 	}
 }
 
