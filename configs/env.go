@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"fmt"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"os"
@@ -8,11 +9,16 @@ import (
 )
 
 func init() {
-	log.Info().Msgf("config file is set to: %s", getEnv("FILE_CONFIG_NAME", ""))
-	viper.SetConfigName(getEnv("FILE_CONFIG_NAME", ""))
+	value, err := getEnv("FILE_CONFIG_NAME")
+	if err != nil {
+		event := log.Panic()
+		event.Msgf("error reading env key: FILE_CONFIG_NAME")
+	}
+	log.Info().Msgf("config file is set to: %s", value)
+	viper.SetConfigName(value)
 	viper.SetConfigType("json")
 	viper.AddConfigPath("./configs")
-	err := viper.ReadInConfig()
+	err = viper.ReadInConfig()
 	if err != nil {
 		event := log.Panic()
 		event.Msgf("Fatal error config file: %w", err)
@@ -35,9 +41,9 @@ func MongoURI() string {
 	return viper.GetString("mongo.uri")
 }
 
-func getEnv(key, fallback string) string {
+func getEnv(key string) (string, error) {
 	if value, ok := os.LookupEnv(key); ok {
-		return value
+		return value, nil
 	}
-	return fallback
+	return "", fmt.Errorf("key not found: %s", key)
 }
