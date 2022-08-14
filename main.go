@@ -1,10 +1,9 @@
 package main
 
 import (
-	"antoccino/configs"
-	"antoccino/helpers"
-	"antoccino/routes"
-	"antoccino/store"
+	"antoccino/config"
+	"antoccino/helper"
+	"antoccino/route"
 	"context"
 	"errors"
 	"flag"
@@ -53,17 +52,15 @@ func main() {
 	router.Use(
 		// LoggerWithFormatter middleware will write the logs to gin.DefaultWriter
 		// By default gin.DefaultWriter = os.Stdout
-		gin.LoggerWithFormatter(helpers.LogFormatter),
+		gin.LoggerWithFormatter(helper.LogFormatter),
 
 		// Recovery middleware recovers from any panics and writes a 500 if there was one.
-		gin.CustomRecovery(helpers.GinCustomRecovery),
+		gin.CustomRecovery(helper.GinCustomRecovery),
 	)
 
-	mongoStore := store.NewMongoDBStore()
-
-	log.Info().Msg("loading service routes...")
-	routes.UserRoute(router, mongoStore)
-	log.Info().Msg("all service routes are loaded")
+	log.Info().Msg("loading service route...")
+	route.UserRoute(router)
+	log.Info().Msg("all service route are loaded")
 
 	srv := &http.Server{
 		Addr: endpoint,

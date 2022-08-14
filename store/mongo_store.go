@@ -1,8 +1,8 @@
 package store
 
 import (
-	"antoccino/configs"
-	"antoccino/models"
+	"antoccino/config"
+	"antoccino/model"
 	"context"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-type mongoStore struct {
+type mongoUserStore struct {
 	store *mongo.Client
 }
 
-func (mc *mongoStore) CreateUser(user models.User) (string, error) {
+func (mc *mongoUserStore) CreateUser(user model.User) (string, error) {
 	var usersCollection = GetCollection(mc.store, "users")
-	newUser := models.UserMongo{
+	newUser := model.UserMongo{
 		Id:       primitive.NewObjectID(),
 		Name:     user.Name,
 		Location: user.Location,
@@ -39,7 +39,7 @@ func (mc *mongoStore) CreateUser(user models.User) (string, error) {
 }
 
 // NewMongoDBStore returns a MongoDB store
-func NewMongoDBStore() Store {
+func NewMongoDBStore() UserStore {
 	client, err := mongo.NewClient(options.Client().ApplyURI(configs.MongoURI()))
 	if err != nil {
 		event := log.Fatal()
@@ -63,7 +63,7 @@ func NewMongoDBStore() Store {
 
 	log.Info().Msg("Successfully connected to MongoDB!")
 
-	s := &mongoStore{
+	s := &mongoUserStore{
 		store: client,
 	}
 	return s

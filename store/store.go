@@ -1,11 +1,11 @@
 package store
 
 import (
-	"antoccino/models"
+	"antoccino/model"
 )
 
-// Store is a data storage interface
-type Store interface {
+// UserStore is a data storage interface for user
+type UserStore interface {
 	// CreateUser returns the ID of newly created user
-	CreateUser(user models.User) (string, error)
+	CreateUser(user model.User) (string, error)
 }

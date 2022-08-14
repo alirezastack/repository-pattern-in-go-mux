@@ -1,7 +1,7 @@
-package helpers
+package helper
 
 import (
-	"antoccino/responses"
+	"antoccino/model"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -14,7 +14,7 @@ func ReturnResponse(c *gin.Context, data any, statusCode int) {
 	switch data.(type) {
 	case error:
 		log.Error().Msgf("an error occurred with statusCode %d: %v", statusCode, data.(error).Error())
-		finalResponse = responses.UserResponse{
+		finalResponse = model.UserResponse{
 			Status: "error",
 			Error: gin.H{
 				"code":    statusCode,
@@ -22,7 +22,7 @@ func ReturnResponse(c *gin.Context, data any, statusCode int) {
 			},
 		}
 	default:
-		finalResponse = responses.UserResponse{
+		finalResponse = model.UserResponse{
 			Status: "success",
 			Data:   data,
 		}

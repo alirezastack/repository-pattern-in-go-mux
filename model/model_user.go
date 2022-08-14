@@ -1,4 +1,4 @@
-package models
+package model
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -23,4 +23,10 @@ func (c UserMongo) ToMongoEntity() (User, error) {
 		Location: c.Location,
 		Title:    c.Title,
 	}, nil
+}
+
+type UserResponse struct {
+	Status string `json:"status"`
+	Data   any    `json:"data"`
+	Error  any    `json:"error"`
 }
